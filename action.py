@@ -17,6 +17,6 @@ class App:
     def draw(self):
         pyxel.cls(1)
         pyxel.rect(controlSize, 0, windowSizeX, windowSizeY, 8)
-        # pyxel.blt(0,0,0,0,0,16,32, 7)
+        pyxel.blt(0,0,0,0,0,16,32, 7)
 
 App()
