@@ -10,4 +10,19 @@
 ##### ベリー姫？
 
 
-### 
+### アイテムの横幅:16
+
+### <br>class
+---
+### player
+### scroll
+item
+hole
+block
+goal
+### Battle
+enemy
+
+
+
+
