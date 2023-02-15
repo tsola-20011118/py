@@ -5,6 +5,7 @@ windowSizeX = 16 * 16
 windowSizeY = 16 * 12
 
 
+
 class App:
     def __init__(self):
         pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
