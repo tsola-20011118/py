@@ -53,6 +53,26 @@ class App:
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
         pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
         pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+    
+    class player:
+        def __init__(self):
+            self.x = 0
+            self.y = 0
+            self.speed = 1
+            self.jump = 1
+            self.direction = 0
+            self.image = 0
+            self.imageX = 0
+            self.imageY = 0
+            self.imageWidth = 16
+            self.imageHeight = 32
+            self.imageColor = 7
+        
+        def update(self):
+            pass
+
+        def draw(self):
+            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
 
     class Scroll:
         def __init__(self, stageNum):
