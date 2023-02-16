@@ -16,10 +16,10 @@
 ---
 ### player
 ### scroll
-item
-hole
-block
-goal
+##### item
+##### [done]hole
+##### [done]block
+##### goal
 ### Battle
 enemy
 
