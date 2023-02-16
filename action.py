@@ -4,6 +4,7 @@ controlSize = 16 * 6
 windowSizeX = 16 * 16
 windowSizeY = 16 * 12
 
+# Loves jinyang
 
 class App:
     def __init__(self):
