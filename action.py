@@ -96,6 +96,8 @@ class App:
             pyxel.rect(controlSize, windowSizeY - 16, windowSizeX, 16, 11)
             for i in range(self.pageNum):
                 self.page[i].draw()
+            pyxel.text(controlSize, 0, str(self.page[0].same),0)
+
 
         class Page:
             def __init__(self, stageNum, pageNum):
@@ -107,23 +109,32 @@ class App:
                 self.blockNum = 2
                 for i in range(self.blockNum):
                     self.block.append(self.Block(stageNum, self.x, self.same))
-                    self.same.append(self.block[i].start)
-                    self.same.append(self.block[i].start + 1)
+                    for j in range(self.block[i].amount):
+                        self.same.append(self.block[i].start + j)
+                self.staticCoin = []
+                self.coinNum = pyxel.rndi(2,4)
+                for i in range(self.coinNum):
+                    self.staticCoin.append(self.StaticCoin(stageNum, self.x, self.same))
+                    self.same.append(self.staticCoin[i].coin)
                 # 床の動くスピード
-                self.speed = 1
+                self.speed = 5
 
             def update(self):
                 self.x -= self.speed
                 self.ground.update(self.x)
                 for i in range(self.blockNum):
                     self.block[i].update(self.x)
+                for i in range(self.coinNum):
+                    self.staticCoin[i].update(self.x)
 
             def draw(self):
                 #pageの切り替わりがわかるように
-                pyxel.rect(self.x, 0, 8, windowSizeY, 0)
+                # pyxel.rect(self.x, 0, 8, windowSizeY, 0)
                 self.ground.draw()
                 for i in range(self.blockNum):
                     self.block[i].draw()
+                for i in range(self.coinNum):
+                    self.staticCoin[i].draw()
 
             class Ground:
                 def __init__(self, stageNum, x):
@@ -159,7 +170,7 @@ class App:
                     #被らないように調節
                     while temp != len(same):
                         for s in same:
-                            if self.start != s and self.start != s + 1:
+                            if self.start != s:
                                 temp += 1
                             else:
                                 temp = 0
@@ -188,51 +199,36 @@ class App:
                             pyxel.blt(self.blockX[i], self.blockY, 0, 16, 0, 16, 16, 6)
                         else:
                             pyxel.blt(self.blockX[i], self.blockY, 0, 16 * self.blockType[i], 0, 16, 16, 6)
-                # def __init__(self, stageNum, x, same):
-                #     # ページの右端x
-                #     self.x = x
-                #     self.temp = 0
-                #     self.itemFlag = False
-                #     #block内にアイテムがあるか
-                #     if pyxel.rndi(1,2) == 1:
-                #         self.itemFlag = True
-                #     #blockが横に何個続くか
-                #     self.blockWidth = pyxel.rndi(1, 3)
-                #     if self.itemFlag == True:
-                #         self.itemblock = pyxel.rndi(0, self.blockWidth - 1)
-                #     self.blockType = pyxel.rndi(1, 2)
-                #     # blockが何マス目にあるか
-                #     self.blockXNum = pyxel.rndi(1, 13)
-                #     #被らないように調節
-                #     while self.temp != len(same):
-                #         for s in same:
-                #             if self.blockXNum != s and self.blockXNum != s + 1:
-                #                 self.temp += 1
-                #             else:
-                #                 self.temp = 0
-                #                 self.blockXNum = pyxel.rndi(1, 13)
-                #                 break
-                #     # blockのx座標
-                #     self.blockX = []
-                #     for i in range(self.blockWidth):
-                #         self.blockX.append((self.blockXNum + i) * 16)
-                #     # blockが上から何マス目にあるか
-                #     self.blockYNum = pyxel.rndi(5, 9)
-                #     # blockのy座標
-                #     self.blockY = self.blockYNum * 16
 
-                # def update(self, x):
-                #     self.x = x
+            class StaticCoin:
+                def __init__(self, stageNum, x, same):
+                    # ページの右端x
+                    self.x = x
+                    self.coin = pyxel.rndi(1, 13)
+                    temp = 0
+                    # 被らないように調節
+                    while temp != len(same):
+                        for s in same:
+                            if self.coin != s:
+                                temp += 1
+                            else:
+                                temp = 0
+                                self.coin = pyxel.rndi(1, 13)
+                                break
+                    self.coinX = x + self.coin * 16
+                    self.coinGet = False
+                    self.coinY = pyxel.rndi(1, 9) * 16
 
-                # def draw(self):
-                #     #TODO itemの絵を入れるとりあえず四角で表記
-                #     for i in range(self.blockWidth):
-                #         if self.itemFlag == True and self.itemblock == i:
-                #             pyxel.blt(self.x + self.blockX[i], self.blockY, 0, 16, 0, 16, 16, 6)
-                #         else:
-                #             pyxel.blt(self.x + self.blockX[i], self.blockY, 0, 16 * self.blockType, 0, 16, 16, 6)
+                def update(self, x):
+                    self.x = x
+                    self.coinX = x + self.coin * 16
 
-            class 
+                def draw(self):
+                    if self.coinGet == False:
+                        pyxel.blt(self.coinX, self.coinY, 0, 0, 16, 16, 16, 6)
+
+
+                
     class Battle:
 
         def __init__(self, stageNum):
