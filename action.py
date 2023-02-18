@@ -54,28 +54,61 @@ class App:
         #操作部分の背景（簡易的）
         pyxel.rect(0, 0, controlSize, windowSizeY, 7)
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
-        pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
-        pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+        # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
+        # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
     
     class Player:
         def __init__(self):
-            self.player_x = 0
-            self.player_y = 0
-            self.speed = 5
-            self.jump = 5
-            self.direction = 0
             self.image = 0
             self.imageX = 0
             self.imageY = 0
             self.imageWidth = 16
             self.imageHeight = 16
-            self.imageColor = 7
+            self.imageColor = 6
+            self.groundY = windowSizeY - 16 - self.imageHeight
+            self.x = 100
+            self.y = self.groundY
+            self.speed = 5
+            self.force = -1
+            self.canJump = [True, True]
+            self.y_prev = self.y
+
+        def move(self):
+            if pyxel.btn(pyxel.KEY_LEFT):
+                self.x -= self.speed
+            if pyxel.btn(pyxel.KEY_RIGHT):
+                self.x += self.speed
+            
+        def jump(self):
+            if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[0]:
+                self.canJump[0] = False
+                self.force = -10
+            if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[1]:
+                self.canJump[1] = False
+                self.force = -10
+            if self.canJump[0] == False and self.canJump[1] == True:
+                y_tmp = self.y
+                self.y += (self.y - self.y_prev) + self.force
+                self.force = 1
+                self.y_prev = y_tmp
+                if self.y == self.groundY:
+                    self.canJump[0] = True
+            if self.canJump[1] == False:
+                y_tmp = self.y
+                self.y += (self.y - self.y_prev) + self.force
+                self.force = 1
+                self.y_prev = y_tmp
+                if self.y == self.groundY:
+                    self.canJump = [True, True]
 
         def update(self):
             pass
 
         def draw(self):
+            self.move()
+            self.jump()
+            pyxel.text(10, 16, str(self.y), 0)
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
 
     class Scroll:
@@ -97,7 +130,6 @@ class App:
             for i in range(self.pageNum):
                 self.page[i].draw()
             pyxel.text(controlSize, 0, str(self.page[0].same),0)
-
 
         class Page:
             def __init__(self, stageNum, pageNum):
