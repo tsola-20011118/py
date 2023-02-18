@@ -54,9 +54,9 @@ class App:
         #操作部分の背景（簡易的）
         pyxel.rect(0, 0, controlSize, windowSizeY, 7)
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
-        # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
-        # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
-        # self.player.draw()
+        pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
+        pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+        self.player.draw()
     
     class Player:
         def __init__(self):
@@ -72,20 +72,11 @@ class App:
             self.imageHeight = 16
             self.imageColor = 7
 
-        def move(self):
-            if pyxel.btn(pyxel.KEY_LEFT):
-                self.player_x += max(self.player_x - self.speed , 0)
-            if pyxel.btn(pyxel.KEY_RIGHT):
-                self.player_x += min(self.player_x + self.speed , windowSizeX - self.imageWidth)
-            if pyxel.btn(pyxel.KEY_SPACE):
-                self.player_y += max(self.player_y - self.jump, self.imageHeight)
-
         def update(self):
             pass
 
         def draw(self):
-            pass
-            # pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
+            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
 
     class Scroll:
         def __init__(self, stageNum):
