@@ -11,7 +11,7 @@ scrollSpeed = 2
 
 class App:
     def __init__(self):
-        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
+        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30,)
         pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
@@ -42,7 +42,6 @@ class App:
             self.battle[self.currentStage].update()
         self.player.update()
 
-
     def draw(self):
         # 全体背景
         pyxel.cls(7)
@@ -57,11 +56,18 @@ class App:
         #操作部分の背景（簡易的）
         pyxel.rect(0, 0, controlSize, windowSizeY, 7)
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
-        # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].blockXNum), 0)
+        pyxel.rect(0, 0, controlSize, windowSizeY / 4, 6)
+        pyxel.rect(0, windowSizeY / 4, controlSize, windowSizeY / 2, 8)
+        pyxel.rect(0, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
+        pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
-    
+
     class Player:
+        # 変数名の変更したらcommitmessageに必ず書いてくれ
         def __init__(self):
             self.image = 0
             self.imageX = 0
@@ -70,7 +76,8 @@ class App:
             self.imageHeight = 16
             self.imageColor = 6
             self.groundY = windowSizeY - 16 - self.imageHeight
-            self.x = 156
+            # 変更しました（初期位置）
+            self.x = controlSize
             self.y = self.groundY
             self.speed = playerSpeed
             self.force = -1
@@ -96,7 +103,7 @@ class App:
                 scrollSpeed = self.scrollspeed
 
         def jump(self):
-            if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[0]:
+            if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
                 self.canJump[0] = False
                 self.force = self.JUMP_FORCE
             if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[1] and self.force >= -2:
@@ -135,9 +142,7 @@ class App:
             #         self.canJump = [True, True]
 
         def update(self):
-            pass
-
-        def draw(self):
+            # 変更しました（draw->updateへの移行）
             self.move()
             self.jump()
             pyxel.text(10, 16, str(self.x), 0)
@@ -160,6 +165,7 @@ class App:
 
         def draw(self):
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
+            
 
     class Scroll:
         def __init__(self, stageNum):
@@ -169,17 +175,25 @@ class App:
             self.page = []
             for i in range(self.pageNum):
                 self.page.append(self.Page(stageNum, i))
+            self.speed = 1
 
         def update(self):
+            if self.page[0].x - self.speed < controlSize + (self.pageNum - 1) * windowSizeX * (-1):
+                self.page[0].x = controlSize + (self.pageNum - 1) * windowSizeX * (-1)
+                self.speed = 0
             for i in range(self.pageNum):
-                self.page[i].update()
+                self.page[i].update(self.speed)
 
         def draw(self):
             # 床（固定）
             pyxel.rect(controlSize, windowSizeY - 16, windowSizeX, 16, 11)
+            #縦線つけてるだけだよ〜〜
             for i in range(self.pageNum):
                 self.page[i].draw()
-            pyxel.text(controlSize, 0, str(self.page[0].same),0)
+                for j in range(16):
+                    pyxel.rect(self.page[i].x + 16 * j, 0, 1, windowSizeY, 0)
+                    pyxel.rect(self.page[i].x, 0, 1, windowSizeY, 8)
+            # pyxel.text(controlSize, 0, str(self.page[0].same),0)
 
         class Page:
             def __init__(self, stageNum, pageNum):
@@ -323,5 +337,23 @@ class App:
 
         def draw(self):
             pass
+
+def Button():
+    if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT, 1, 1) and (pyxel.mouse_x <= controlSize or controlSize + windowSizeX <= pyxel.mouse_x):
+        # 上ボタン押した時返り値10
+        # 下ボタン押した時返り値-10
+        # 右ボタン押した時返り値1
+        # 左ボタン押した時返り値-1
+        if 0 <= pyxel.mouse_y <= windowSizeY / 4:
+            return 10
+        elif windowSizeY / 4 * 3 <= pyxel.mouse_y <= windowSizeY:
+            return -10
+        elif pyxel.mouse_x <= controlSize:
+            return -1
+        else:
+            return 1
+
+    
+        
 
 App()
