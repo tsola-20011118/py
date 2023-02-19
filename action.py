@@ -12,7 +12,7 @@ scrollSpeed = 1
 
 class App:
     def __init__(self):
-        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30,)
+        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
         pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
@@ -42,6 +42,7 @@ class App:
         else:
             self.battle[self.currentStage].update()
         self.player.update()
+        
 
     def draw(self):
         # 全体背景
@@ -60,15 +61,34 @@ class App:
         pyxel.rect(0, 0, controlSize, windowSizeY / 4, 6)
         pyxel.rect(0, windowSizeY / 4, controlSize, windowSizeY / 2, 8)
         pyxel.rect(0, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
-        pyxel.rect(controlSize + windowSizeX, 0,
-                   controlSize, windowSizeY / 4, 6)
-        pyxel.rect(controlSize + windowSizeX, windowSizeY /
-                   4, controlSize, windowSizeY / 2, 1)
-        pyxel.rect(controlSize + windowSizeX, windowSizeY /
-                   4 * 3, controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, 0,controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
         pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
+        # self.Bump(self.player, self.scroll[self.currentStage])
+
+    # def Bump(self, player, scroll):
+    #     pageNum = None
+    #     placeNum = None
+    #     for i in range(scroll.pageNum):
+    #         for j in range(16):
+    #             if pageNum == None and placeNum == None and scroll.page[i].x + j * 16 <= player.x <= scroll.page[i].x + (j + 1) * 16:
+    #                 pageNum = i
+    #                 placeNum = j
+    #                 break
+    #     pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
+    #     pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
+    #     self.BlockHEAD(player, scroll.page[i])
+
+    # def BlockHEAD(self, player, block):
+    #     if player.canJump[0] == False and player.force > 0 and player.y + player.force > block:
+    #         pyxel.text(controlSize, 0, "test", 0)
+    #     pyxel.text(controlSize + 16, 0, str(player.force), 0)
+    #     # player.force = 0
+
+
 
     class Player:
         # 変数名の変更したらcommitmessageに必ず書いてくれ
@@ -112,7 +132,7 @@ class App:
             if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
                 self.canJump[0] = False
                 self.force = self.JUMP_FORCE
-            if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[1] and self.force >= -2:
+            if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[1] and self.force >= -2:
                 self.canJump[1] = False
                 self.force = self.JUMP_FORCE
             if self.canJump[0] == False and self.canJump[1] == True:
