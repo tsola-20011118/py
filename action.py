@@ -3,8 +3,11 @@ import pyxel
 controlSize = 16 * 6
 windowSizeX = 16 * 16
 windowSizeY = 16 * 12
+playerSpeed = 4 # 2のn乗でないとバグる
+scrollSpeed = 2
 
-# Loves jinyang
+# Loves jinyang♡
+# Loves rkurimot♡
 
 class App:
     def __init__(self):
@@ -76,55 +79,91 @@ class App:
             # 変更しました（初期位置）
             self.x = controlSize
             self.y = self.groundY
-            self.speed = 5
+            self.speed = playerSpeed
             self.force = -1
+            self.JUMP_FORCE = -12
             self.canJump = [True, True]
             self.y_prev = self.y
-            # 追加しました（生きてるかのflag）
-            self.alive = True
+            self.scrollspeed = scrollSpeed
 
         def move(self):
-            # 変更しました
-            if Button() == -1 or pyxel.btn(pyxel.KEY_LEFT):
+            global playerSpeed, scrollSpeed
+            if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize:
+                self.image = 2
                 self.x -= self.speed
-                # 追加しました
-                if self.x < controlSize:
-                    self.x = controlSize
-            if Button() == 1 or pyxel.btn(pyxel.KEY_RIGHT):
-                self.x += self.speed
-                # 追加しました
-                if self.x > controlSize + windowSizeX - 16:
-                    self.x = controlSize + windowSizeX - 16
+            if pyxel.btn(pyxel.KEY_RIGHT):
+                self.image = 1
+                if self.x < controlSize + windowSizeX - self.imageWidth - 64:
+                    self.x += self.speed
+                else:
+                    scrollSpeed = playerSpeed
+            if pyxel.btn(pyxel.KEY_LEFT) == False and pyxel.btn(pyxel.KEY_RIGHT) == False:
+                self.image = 0
+            if pyxel.btn(pyxel.KEY_RIGHT) == False:
+                scrollSpeed = self.scrollspeed
 
         def jump(self):
             if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
                 self.canJump[0] = False
-                self.force = -10
-            if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[1]:
+                self.force = self.JUMP_FORCE
+            if pyxel.btn(pyxel.KEY_SPACE) and self.canJump[1] and self.force >= -2:
                 self.canJump[1] = False
-                self.force = -10
+                self.force = self.JUMP_FORCE
             if self.canJump[0] == False and self.canJump[1] == True:
-                y_tmp = self.y
-                self.y += (self.y - self.y_prev) + self.force
-                self.force = 1
-                self.y_prev = y_tmp
-                if self.y == self.groundY:
+                self.y += self.force
+                self.force += 1
+                if self.y >= self.groundY:
+                    self.y = self.groundY
                     self.canJump[0] = True
-            if self.canJump[1] == False:
-                y_tmp = self.y
-                self.y += (self.y - self.y_prev) + self.force
-                self.force = 1
-                self.y_prev = y_tmp
-                if self.y == self.groundY:
+            if self.canJump[1] == False and self.canJump[0] == False:
+                self.y += self.force
+                self.force += 1
+                if self.y >= self.groundY:
+                    self.y = self.groundY
                     self.canJump = [True, True]
+
+            # if self.canJump[0] == False and self.canJump[1] == True:
+            #     pyxel.text(10, 32, str(self.canJump), 0)
+            #     y_tmp = self.y
+            #     self.y += (self.y - self.y_prev) + self.force
+            #     self.force = 1
+            #     self.y_prev = y_tmp
+            #     if self.y >= self.groundY:
+            #         self.y = self.groundY
+            #         self.canJump[0] = True
+            # if self.canJump[1] == False and self.canJump[0] == False:
+            #     pyxel.text(10, 48, str(self.canJump), 0)
+            #     y_tmp = self.y
+            #     self.y += (self.y - self.y_prev) + self.force
+            #     self.force = 1
+            #     self.y_prev = y_tmp
+            #     if self.y >= self.groundY:
+            #         self.y = self.groundY
+            #         self.canJump = [True, True]
 
         def update(self):
             # 変更しました（draw->updateへの移行）
             self.move()
             self.jump()
+            pyxel.text(10, 16, str(self.x), 0)
+            pyxel.text(10, 32, str(self.y), 0)
+            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
+
+    class Item:
+        def __init__(self):
+            self.image = 0
+            self.imageX = 0
+            self.imageY = 0
+            self.imageWidth = 16
+            self.imageHeight = 16
+            self.imageColor = 6
+            self.x = 100
+            self.y = 100
+
+        def update(self):
+            pass
 
         def draw(self):
-            pyxel.text(10, 16, str(self.y), 0)
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
             
 
@@ -173,9 +212,13 @@ class App:
                 for i in range(self.coinNum):
                     self.staticCoin.append(self.StaticCoin(stageNum, self.x, self.same))
                     self.same.append(self.staticCoin[i].coin)
+                # 床の動くスピード
+                self.speed = 0
 
-            def update(self, speed):
-                self.x -= speed
+            def update(self):
+                global scrollSpeed
+                self.speed = scrollSpeed
+                self.x -= self.speed
                 self.ground.update(self.x)
                 for i in range(self.blockNum):
                     self.block[i].update(self.x)
