@@ -3,11 +3,12 @@ import pyxel
 controlSize = 16 * 6
 windowSizeX = 16 * 16
 windowSizeY = 16 * 12
-playerSpeed = 4 # 2のn乗でないとバグる
-scrollSpeed = 2
+playerSpeed = 4  # 2のn乗でないとバグる
+scrollSpeed = 1
 
 # Loves jinyang♡
 # Loves rkurimot♡
+
 
 class App:
     def __init__(self):
@@ -29,7 +30,7 @@ class App:
         # battleインスタンス化
         for i in range(self.stageNum):
             self.battle.append(self.Battle(i))
-        #playerインスタンス化
+        # playerインスタンス化
         self.player = self.Player()
         pyxel.run(self.update, self.draw)
 
@@ -53,15 +54,18 @@ class App:
         # battle
         else:
             self.battle[self.currentStage].draw()
-        #操作部分の背景（簡易的）
+        # 操作部分の背景（簡易的）
         pyxel.rect(0, 0, controlSize, windowSizeY, 7)
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
         pyxel.rect(0, 0, controlSize, windowSizeY / 4, 6)
         pyxel.rect(0, windowSizeY / 4, controlSize, windowSizeY / 2, 8)
         pyxel.rect(0, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
-        pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY / 4, 6)
-        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
-        pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, 0,
+                   controlSize, windowSizeY / 4, 6)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY /
+                   4, controlSize, windowSizeY / 2, 1)
+        pyxel.rect(controlSize + windowSizeX, windowSizeY /
+                   4 * 3, controlSize, windowSizeY / 4, 6)
         pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
@@ -93,14 +97,16 @@ class App:
                 self.x -= self.speed
             if pyxel.btn(pyxel.KEY_RIGHT):
                 self.image = 1
-                if self.x < controlSize + windowSizeX - self.imageWidth - 64:
+                if self.x < controlSize + windowSizeX - self.imageWidth:
                     self.x += self.speed
-                else:
-                    scrollSpeed = playerSpeed
+                # TODO いる？
+                # else:
+                #     scrollSpeed = playerSpeed
             if pyxel.btn(pyxel.KEY_LEFT) == False and pyxel.btn(pyxel.KEY_RIGHT) == False:
                 self.image = 0
-            if pyxel.btn(pyxel.KEY_RIGHT) == False:
-                scrollSpeed = self.scrollspeed
+            # TODO いる？
+            # if pyxel.btn(pyxel.KEY_RIGHT) == False:
+            #     scrollSpeed = self.scrollspeed
 
         def jump(self):
             if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
@@ -145,9 +151,12 @@ class App:
             # 変更しました（draw->updateへの移行）
             self.move()
             self.jump()
+
+        def draw(self):
             pyxel.text(10, 16, str(self.x), 0)
             pyxel.text(10, 32, str(self.y), 0)
-            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
+            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,
+                      self.imageWidth, self.imageHeight, self.imageColor)
 
     class Item:
         def __init__(self):
@@ -164,30 +173,33 @@ class App:
             pass
 
         def draw(self):
-            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
-            
+            pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,
+                      self.imageWidth, self.imageHeight, self.imageColor)
 
     class Scroll:
         def __init__(self, stageNum):
-            #スクロールが全部で何ページか
+            # スクロールが全部で何ページか
             self.pageNum = 10
             # pageが全部で何ページか
             self.page = []
             for i in range(self.pageNum):
                 self.page.append(self.Page(stageNum, i))
-            self.speed = 1
+            self.speed = scrollSpeed
 
         def update(self):
+            global scrollSpeed
             if self.page[0].x - self.speed < controlSize + (self.pageNum - 1) * windowSizeX * (-1):
-                self.page[0].x = controlSize + (self.pageNum - 1) * windowSizeX * (-1)
-                self.speed = 0
+                self.page[0].x = controlSize + \
+                    (self.pageNum - 1) * windowSizeX * (-1)
+                scrollSpeed = 0
+            self.speed = scrollSpeed
             for i in range(self.pageNum):
-                self.page[i].update(self.speed)
+                self.page[i].update()
 
         def draw(self):
             # 床（固定）
             pyxel.rect(controlSize, windowSizeY - 16, windowSizeX, 16, 11)
-            #縦線つけてるだけだよ〜〜
+            # 縦線つけてるだけだよ〜〜
             for i in range(self.pageNum):
                 self.page[i].draw()
                 for j in range(16):
@@ -208,9 +220,10 @@ class App:
                     for j in range(self.block[i].amount):
                         self.same.append(self.block[i].start + j)
                 self.staticCoin = []
-                self.coinNum = pyxel.rndi(2,4)
+                self.coinNum = pyxel.rndi(2, 4)
                 for i in range(self.coinNum):
-                    self.staticCoin.append(self.StaticCoin(stageNum, self.x, self.same))
+                    self.staticCoin.append(
+                        self.StaticCoin(stageNum, self.x, self.same))
                     self.same.append(self.staticCoin[i].coin)
                 # 床の動くスピード
                 self.speed = 0
@@ -226,7 +239,7 @@ class App:
                     self.staticCoin[i].update(self.x)
 
             def draw(self):
-                #pageの切り替わりがわかるように
+                # pageの切り替わりがわかるように
                 # pyxel.rect(self.x, 0, 8, windowSizeY, 0)
                 self.ground.draw()
                 for i in range(self.blockNum):
@@ -254,7 +267,8 @@ class App:
                 def draw(self):
                     # 床（固定）
                     for i in range(self.grassFineness):
-                        pyxel.rect(self.x + i * windowSizeX / self.grassFineness, windowSizeY - 16, windowSizeX / self.grassFineness,  self.grass[i], 3)
+                        pyxel.rect(self.x + i * windowSizeX / self.grassFineness, windowSizeY -
+                                   16, windowSizeX / self.grassFineness,  self.grass[i], 3)
                     # 穴（固定)
                     pyxel.rect(self.holeX, windowSizeY - 16, 16 * 2,  16, 12)
 
@@ -262,10 +276,10 @@ class App:
                 def __init__(self, stageNum, x, same):
                     # ページの右端x
                     self.x = x
-                    self.amount = pyxel.rndi(3,4)
+                    self.amount = pyxel.rndi(3, 4)
                     self.start = pyxel.rndi(1, 13)
                     temp = 0
-                    #被らないように調節
+                    # 被らないように調節
                     while temp != len(same):
                         for s in same:
                             if self.start != s:
@@ -294,9 +308,11 @@ class App:
                 def draw(self):
                     for i in range(self.amount):
                         if self.blockItem[i] == True:
-                            pyxel.blt(self.blockX[i], self.blockY, 0, 16, 0, 16, 16, 6)
+                            pyxel.blt(
+                                self.blockX[i], self.blockY, 0, 16, 0, 16, 16, 6)
                         else:
-                            pyxel.blt(self.blockX[i], self.blockY, 0, 16 * self.blockType[i], 0, 16, 16, 6)
+                            pyxel.blt(
+                                self.blockX[i], self.blockY, 0, 16 * self.blockType[i], 0, 16, 16, 6)
 
             class StaticCoin:
                 def __init__(self, stageNum, x, same):
@@ -325,8 +341,6 @@ class App:
                     if self.coinGet == False:
                         pyxel.blt(self.coinX, self.coinY, 0, 0, 16, 16, 16, 6)
 
-
-                
     class Battle:
 
         def __init__(self, stageNum):
@@ -337,6 +351,7 @@ class App:
 
         def draw(self):
             pass
+
 
 def Button():
     if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT, 1, 1) and (pyxel.mouse_x <= controlSize or controlSize + windowSizeX <= pyxel.mouse_x):
@@ -353,7 +368,5 @@ def Button():
         else:
             return 1
 
-    
-        
 
 App()
