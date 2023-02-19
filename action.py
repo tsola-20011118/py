@@ -4,7 +4,7 @@ controlSize = 16 * 6
 windowSizeX = 16 * 16
 windowSizeY = 16 * 12
 playerSpeed = 4  # 2のn乗でないとバグる
-scrollSpeed = 1
+scrollSpeed = 0
 
 # Loves jinyang♡
 # Loves rkurimot♡
@@ -12,7 +12,7 @@ scrollSpeed = 1
 
 class App:
     def __init__(self):
-        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
+        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=3)
         pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
@@ -67,26 +67,33 @@ class App:
         pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
-        # self.Bump(self.player, self.scroll[self.currentStage])
+        self.Bump(self.player, self.scroll[self.currentStage])
 
-    # def Bump(self, player, scroll):
-    #     pageNum = None
-    #     placeNum = None
-    #     for i in range(scroll.pageNum):
-    #         for j in range(16):
-    #             if pageNum == None and placeNum == None and scroll.page[i].x + j * 16 <= player.x <= scroll.page[i].x + (j + 1) * 16:
-    #                 pageNum = i
-    #                 placeNum = j
-    #                 break
+    def Bump(self, player, scroll):
+        pageNum = None
+        placeNum = None
+        for i in range(scroll.pageNum):
+            for j in range(16):
+                if pageNum == None and placeNum == None and scroll.page[i].x + j * 16 <= player.x <= scroll.page[i].x + (j + 1) * 16:
+                    pageNum = i
+                    placeNum = j
+                    break
+        if scroll.page[pageNum].block[0].blockY #player.yが０〜scroll.page[pageNum].block[0].blockY-16の時の終了判定
+        if windowSizeY - 16 #player.yがscroll.page[pageNum].block[0].blockY+ 16 〜の時の終了判定
     #     pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
     #     pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
-    #     self.BlockHEAD(player, scroll.page[i])
+    #     self.BlockHEAD(player, scroll.page[pageNum])
 
-    # def BlockHEAD(self, player, block):
-    #     if player.canJump[0] == False and player.force > 0 and player.y + player.force > block:
-    #         pyxel.text(controlSize, 0, "test", 0)
-    #     pyxel.text(controlSize + 16, 0, str(player.force), 0)
-    #     # player.force = 0
+    # def BlockHEAD(self, player, page):
+        
+        # if player.canJump[0] == False and player.force > 0 :
+        #     for i in page.block:
+        #         for j in range(i.amount):
+        #             if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY <= player.y + 16:
+        #                 player.canJump = [True, True]
+        #                 player.y = i.blockY - 16
+        #                 pyxel.text(controlSize, 32, "Test", 0)
+
 
 
 
@@ -294,7 +301,7 @@ class App:
 
             class Block:
                 def __init__(self, stageNum, x, same):
-                    # ページの右端x
+                    # ページの右端xself
                     self.x = x
                     self.amount = pyxel.rndi(3, 4)
                     self.start = pyxel.rndi(1, 13)
@@ -310,14 +317,12 @@ class App:
                                 break
                     self.blockX = []
                     self.blockItem = []
-                    self.blockType = []
                     for i in range(self.amount):
                         self.blockX.append(x + (self.start + i) * 16)
                         if pyxel.rndi(0, 1) == 0 and i != 0 and self.blockItem[i - 1] != True:
                             self.blockItem.append(True)
                         else:
                             self.blockItem.append(False)
-                        self.blockType.append(pyxel.rndi(2, 3))
                     self.blockY = pyxel.rndi(5, 9) * 16
 
                 def update(self, x):
@@ -332,7 +337,7 @@ class App:
                                 self.blockX[i], self.blockY, 0, 16, 0, 16, 16, 6)
                         else:
                             pyxel.blt(
-                                self.blockX[i], self.blockY, 0, 16 * self.blockType[i], 0, 16, 16, 6)
+                                self.blockX[i], self.blockY, 0, 16 * 2, 0, 16, 16, 6)
 
             class StaticCoin:
                 def __init__(self, stageNum, x, same):
