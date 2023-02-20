@@ -9,6 +9,7 @@ scrollSpeed = 2
 # Loves jinyang♡
 # Loves rkurimot♡
 # Loves igagurimot♡
+# Loves roostar and Bython
 
 
 class App:
@@ -69,7 +70,7 @@ class App:
         pyxel.text(48, 0, str(self.player.isFall), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
-        self.Bump(self.player, self.scroll[self.currentStage])
+        # self.Bump(self.player, self.scroll[self.currentStage])
 
     def Bump(self, player, scroll):
         pageNum = None
@@ -136,6 +137,7 @@ class App:
 
         def move(self):
             global playerSpeed, scrollSpeed
+            self.x -= scrollSpeed
             if self.isStun == False:
                 if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize:
                     self.image = 2
@@ -395,12 +397,12 @@ class App:
 
         class Boss:
             def __init__(self):
-                # self.image = 0
-                # self.imageX = 0
-                # self.imageY = 0
+                self.image = 0
+                self.imageX = 32
+                self.imageY = 48
                 self.imageWidth = 32
                 self.imageHeight = 32
-                # self.imageColor = 6
+                self.imageColor = 6
                 self.groundY = windowSizeY - 16 - self.imageHeight
                 self.x = controlSize + (windowSizeX - self.imageHeight) / 2
                 self.y = self.groundY
@@ -556,7 +558,7 @@ class App:
                     pyxel.rect(self.x, self.y + 4, self.beamSize, self.imageHeight - 8, 8)
                 elif self.beamDirection == 1:
                     pyxel.rect(self.x - self.beamSize, self.y + 4, self.beamSize, self.imageHeight - 8, 8)
-                pyxel.rect(self.x, self.y, self.imageWidth, self.imageHeight, 8)
+                pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
                 pyxel.text(controlSize, 0, str(self.action), 0)
                 # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
                 # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
