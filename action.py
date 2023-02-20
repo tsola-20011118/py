@@ -4,16 +4,17 @@ controlSize = 16 * 6
 windowSizeX = 16 * 16
 windowSizeY = 16 * 12
 playerSpeed = 4  # 2のn乗でないとバグる
-scrollSpeed = 0
+scrollSpeed = 2
 
 # Loves jinyang♡
 # Loves rkurimot♡
+# Loves igagurimot♡
 
 
 class App:
     def __init__(self):
         pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
-        pyxel.load("action.pyxres")
+        # pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
         # 今何ステージ目か
@@ -64,8 +65,9 @@ class App:
         pyxel.rect(controlSize + windowSizeX, 0,controlSize, windowSizeY / 4, 6)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
-        pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
-        # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+        # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
+        # pyxel.text(48, 0, str(self.player.isFall), 0)
+        # # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
         self.Bump(self.player, self.scroll[self.currentStage])
 
@@ -80,21 +82,34 @@ class App:
                     break
         # if scroll.page[pageNum].block[0].blockY #player.yが０〜scroll.page[pageNum].block[0].blockY-16の時の終了判定
         # if windowSizeY - 16 #player.yがscroll.page[pageNum].block[0].blockY+ 16 〜の時の終了判定
-    #     pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
-    #     pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
-    #     self.BlockHEAD(player, scroll.page[pageNum])
+    #     # pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
+    #     # pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
+        self.BlockHEAD(player, scroll.page[pageNum])
 
-    # def BlockHEAD(self, player, page):
-        
-        # if player.canJump[0] == False and player.force > 0 :
-        #     for i in page.block:
-        #         for j in range(i.amount):
-        #             if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY <= player.y + 16:
-        #                 player.canJump = [True, True]
-        #                 player.y = i.blockY - 16
-        #                 pyxel.text(controlSize, 32, "Test", 0)
-
-
+    def BlockHEAD(self, player, page):
+        flag = True
+        if player.isFall == True:
+            list = []
+            for i in page.block:
+                for j in range(i.amount):
+                    if i.blockX[j] < player.x < i.blockX[j] + 16:
+                        if i.blockY > player.y:
+                            list.append(i.blockY)
+            if list != []:
+                player.grandY = min(list) - 16
+            else:
+                player.grandY = windowSizeY - 16 - 16
+            player.Fall()
+        for i in page.block:
+            for j in range(i.amount):
+                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
+                    player.canJump = [True, True]
+                    player.y = i.blockY - 16
+                    player.grandY = i.blockY - 16
+                    player.isFall = False
+                    flag = False
+        if flag:
+            player.isFall = True
 
 
     class Player:
@@ -112,67 +127,65 @@ class App:
             self.y = self.groundY
             self.speed = playerSpeed
             self.force = -1
-            self.JUMP_FORCE = -12
+            self.JUMP_FORCE = -10
             self.canJump = [True, True]
             self.y_prev = self.y
             self.scrollspeed = scrollSpeed
+            self.isFall = False
+            self.isStun = False
 
         def move(self):
             global playerSpeed, scrollSpeed
-            if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize:
-                self.image = 2
-                self.x -= self.speed
-            if pyxel.btn(pyxel.KEY_RIGHT):
-                self.image = 1
-                if self.x < controlSize + windowSizeX - self.imageWidth:
-                    self.x += self.speed
+            if self.isStun == False:
+                if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize:
+                    self.image = 2
+                    self.x -= self.speed
+                if pyxel.btn(pyxel.KEY_RIGHT):
+                    self.image = 1
+                    if self.x < controlSize + windowSizeX - self.imageWidth:
+                        self.x += self.speed
+                    
+                    # TODO いる？
+                    # else:
+                    #     scrollSpeed = playerSpeed
+                if pyxel.btn(pyxel.KEY_LEFT) == False and pyxel.btn(pyxel.KEY_RIGHT) == False:
+                    self.image = 0
                 # TODO いる？
-                # else:
-                #     scrollSpeed = playerSpeed
-            if pyxel.btn(pyxel.KEY_LEFT) == False and pyxel.btn(pyxel.KEY_RIGHT) == False:
-                self.image = 0
-            # TODO いる？
-            # if pyxel.btn(pyxel.KEY_RIGHT) == False:
-            #     scrollSpeed = self.scrollspeed
+                # if pyxel.btn(pyxel.KEY_RIGHT) == False:
+                #     scrollSpeed = self.scrollspeed
 
         def jump(self):
-            if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
-                self.canJump[0] = False
-                self.force = self.JUMP_FORCE
-            if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[1] and self.force >= -2:
-                self.canJump[1] = False
-                self.force = self.JUMP_FORCE
-            if self.canJump[0] == False and self.canJump[1] == True:
-                self.y += self.force
-                self.force += 1
-                if self.y >= self.groundY:
-                    self.y = self.groundY
-                    self.canJump[0] = True
-            if self.canJump[1] == False and self.canJump[0] == False:
-                self.y += self.force
-                self.force += 1
-                if self.y >= self.groundY:
-                    self.y = self.groundY
-                    self.canJump = [True, True]
-
-            # if self.canJump[0] == False and self.canJump[1] == True:
-            #     pyxel.text(10, 32, str(self.canJump), 0)
-            #     y_tmp = self.y
-            #     self.y += (self.y - self.y_prev) + self.force
-            #     self.force = 1
-            #     self.y_prev = y_tmp
-            #     if self.y >= self.groundY:
-            #         self.y = self.groundY
-            #         self.canJump[0] = True
-            # if self.canJump[1] == False and self.canJump[0] == False:
-            #     pyxel.text(10, 48, str(self.canJump), 0)
-            #     y_tmp = self.y
-            #     self.y += (self.y - self.y_prev) + self.force
-            #     self.force = 1
-            #     self.y_prev = y_tmp
-            #     if self.y >= self.groundY:
-            #         self.y = self.groundY
-            #         self.canJump = [True, True]
+            if self.isStun == False:
+                if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[0]:
+                    self.canJump[0] = False
+                    self.force = self.JUMP_FORCE
+                    self.isFall = False
+                if (Button() == 10 or pyxel.btn(pyxel.KEY_SPACE)) and self.canJump[1] and self.force >= -2:
+                    self.canJump[1] = False
+                    self.force = self.JUMP_FORCE
+                    self.isFall = False
+                if self.canJump[0] == False and self.canJump[1] == True:
+                    self.y += self.force
+                    self.force += 1
+                    if self.y >= self.groundY:
+                        self.y = self.groundY
+                        self.canJump[0] = True
+                        self.isFall = True
+                if self.canJump[1] == False and self.canJump[0] == False:
+                    self.y += self.force
+                    self.force += 1
+                    if self.y >= self.groundY:
+                        self.y = self.groundY
+                        self.canJump = [True, True]
+                        self.isFall = True
+        
+        def Fall(self):
+            self.y += self.force
+            self.force += 1
+            if self.y + self.force >= self.grandY:
+                self.y = self.grandY
+                self.canJump = [True, True]
+                self.isFall = False
 
         def update(self):
             # 変更しました（draw->updateへの移行）
@@ -180,8 +193,8 @@ class App:
             self.jump()
 
         def draw(self):
-            pyxel.text(10, 16, str(self.x), 0)
-            pyxel.text(10, 32, str(self.y), 0)
+            # pyxel.text(10, 16, str(self.x), 0)
+            # pyxel.text(10, 32, str(self.y), 0)
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,
                       self.imageWidth, self.imageHeight, self.imageColor)
 
@@ -232,7 +245,7 @@ class App:
                 for j in range(16):
                     pyxel.rect(self.page[i].x + 16 * j, 0, 1, windowSizeY, 0)
                     pyxel.rect(self.page[i].x, 0, 1, windowSizeY, 8)
-            # pyxel.text(controlSize, 0, str(self.page[0].same),0)
+            # # pyxel.text(controlSize, 0, str(self.page[0].same),0)
 
         class Page:
             def __init__(self, stageNum, pageNum):
@@ -369,15 +382,24 @@ class App:
     class Battle:
         def __init__(self, stageNum):
             self.boss = self.Boss()
+            self.test = True
             
 
         def update(self, player):
             self.boss.update(player)
+            if self.boss.x - self.boss.imageWidth + 1 < player.x < self.boss.x + self.boss.imageWidth and self.boss.y - self.boss.imageHeight + 1 < player.y < self.boss.y + self.boss.imageHeight:
+                self.test= False
+            else:
+                self.test = True
+
+            # elif self.fireFlag == True:
+            # elif self.beamFlag == True:
 
         def draw(self):
             pyxel.rect(controlSize, 0, windowSizeX, windowSizeY, 5)
             self.boss.draw()
             pyxel.rect(controlSize, windowSizeY - 16, windowSizeX, 16, 13)
+            pyxel.text(controlSize, 16, str(self.test), 0)
             
 
         class Boss:
@@ -544,10 +566,10 @@ class App:
                 elif self.beamDirection == 1:
                     pyxel.rect(self.x - self.beamSize, self.y + 4, self.beamSize, self.imageHeight - 8, 8)
                 pyxel.rect(self.x, self.y, self.imageWidth, self.imageHeight, 8)
-                pyxel.text(controlSize, 0, str(self.action), 0)
-                # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
-                # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
-                # pyxel.text(controlSize, 48, str(self.beamSpeed), 0)
+                # pyxel.text(controlSize, 0, str(self.action), 0)
+                # # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
+                # # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
+                # # pyxel.text(controlSize, 48, str(self.beamSpeed), 0)
                 # pyxel.rect(self.x + self.imageWidth / 2 , self.y + self.imageHeight / 2, 10, 10, 0)
                 
                 # pyxel.circ(0, 0, 100, 0)
