@@ -10,6 +10,7 @@ scrollSpeed = 2
 # Loves rkurimot♡
 # Loves igagurimot♡
 # Loves roostar and Bython
+# Loves flower ghost
 
 
 class App:
@@ -56,7 +57,7 @@ class App:
             self.scroll[self.currentStage].draw()
         # battle
         else:
-            self.battle[self.currentStage].draw()
+            self.battle[self.currentStage].draw(self.player)
         # 操作部分の背景（簡易的）
         pyxel.rect(0, 0, controlSize, windowSizeY, 7)
         pyxel.rect(controlSize + windowSizeX, 0, controlSize, windowSizeY, 7)
@@ -70,6 +71,7 @@ class App:
         pyxel.text(48, 0, str(self.player.isFall), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
+
         # self.Bump(self.player, self.scroll[self.currentStage])
 
     def Bump(self, player, scroll):
@@ -134,15 +136,17 @@ class App:
             self.scrollspeed = scrollSpeed
             self.isFall = False
             self.isStun = False
+            self.canMove = [True, True]
+
 
         def move(self):
             global playerSpeed, scrollSpeed
             self.x -= scrollSpeed
             if self.isStun == False:
-                if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize:
+                if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize and self.canMove[1] == True:
                     self.image = 2
                     self.x -= self.speed
-                if pyxel.btn(pyxel.KEY_RIGHT):
+                if pyxel.btn(pyxel.KEY_RIGHT) and self.canMove[0] == True:
                     self.image = 1
                     if self.x < controlSize + windowSizeX - self.imageWidth:
                         self.x += self.speed
@@ -190,15 +194,15 @@ class App:
                 self.isFall = False
 
         def update(self):
-            # 変更しました（draw->updateへの移行）
             self.move()
             self.jump()
 
         def draw(self):
-            pyxel.text(10, 16, str(self.x), 0)
-            pyxel.text(10, 32, str(self.y), 0)
+            # pyxel.text(10, 16, str(self.x), 0)
+            pyxel.text(10, 32, str(self.canMove[0]), 0)
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,
                       self.imageWidth, self.imageHeight, self.imageColor)
+            
 
     class Item:
         def __init__(self):
@@ -247,7 +251,7 @@ class App:
                 for j in range(16):
                     pyxel.rect(self.page[i].x + 16 * j, 0, 1, windowSizeY, 0)
                     pyxel.rect(self.page[i].x, 0, 1, windowSizeY, 8)
-            # pyxel.text(controlSize, 0, str(self.page[0].same),0)
+            # # pyxel.text(controlSize, 0, str(self.page[0].same),0)
 
         class Page:
             def __init__(self, stageNum, pageNum):
@@ -385,14 +389,32 @@ class App:
         def __init__(self, stageNum):
             self.boss = self.Boss()
             
+            
 
         def update(self, player):
+            self.playerMoveCheck(player)
             self.boss.update(player)
 
-        def draw(self):
+            # elif self.fireFlag == True:
+            # elif self.beamFlag == True:
+
+        def draw(self, player):
             pyxel.rect(controlSize, 0, windowSizeX, windowSizeY, 5)
             self.boss.draw()
             pyxel.rect(controlSize, windowSizeY - 16, windowSizeX, 16, 13)
+            pyxel.text(controlSize, 16, str(self.boss.y - player.imageHeight < player.y < self.boss.y + self.boss.imageHeight), 0)
+        
+        def playerMoveCheck(self, player):
+            if player.x + player.speed + player.imageWidth > self.boss.x and player.x < self.boss.x and self.boss.y - player.imageHeight < player.y < self.boss.y + self.boss.imageHeight:
+                player.canMove[0] = False
+            else:
+                player.canMove[0] = True
+            if player.x - player.speed < self.boss.x + self.boss.imageWidth and player.x > self.boss.x and self.boss.y - player.imageHeight < player.y < self.boss.y + self.boss.imageHeight:
+                player.canMove[1] = False
+            else:
+                player.canMove[1] = True
+                
+            
             
 
         class Boss:
@@ -428,6 +450,7 @@ class App:
                 self.beamSpeed = 0
                 self.beamTime = 0
                 self.beamVanishtime = 0
+                self.damage = 3
 
             def update(self, player):
                 if self.time % 90 == 0 and self.action == False:
@@ -447,6 +470,7 @@ class App:
                         else:
                             self.beamDirection = 0
                 self.stun(player)
+                # self.be_stamp(player)
                 self.jump()
                 self.fire()
                 self.beam()
@@ -532,6 +556,12 @@ class App:
                         self.action = False
                     self.beamTime += 1
 
+            def be_stamp(self, player):
+                if self.x - 10 < player.x < self.x + 10 and self.y - 10 < player.y < self.y + 6:
+                    player.canJump[0] = True
+                    self.damage -= 1
+                    if self.damage == 0:
+                        self.isDead = True
 
 
             def moveRL(self):
