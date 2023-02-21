@@ -65,9 +65,9 @@ class App:
         pyxel.rect(controlSize + windowSizeX, 0,controlSize, windowSizeY / 4, 6)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
-        # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
-        # pyxel.text(48, 0, str(self.player.isFall), 0)
-        # # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+        pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
+        pyxel.text(48, 0, str(self.player.isFall), 0)
+        # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
         self.Bump(self.player, self.scroll[self.currentStage])
 
@@ -82,8 +82,8 @@ class App:
                     break
         # if scroll.page[pageNum].block[0].blockY #player.yが０〜scroll.page[pageNum].block[0].blockY-16の時の終了判定
         # if windowSizeY - 16 #player.yがscroll.page[pageNum].block[0].blockY+ 16 〜の時の終了判定
-    #     # pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
-    #     # pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
+    #     pyxel.text(controlSize, 16, str(pageNum) + ":" + str(placeNum), 0)
+    #     pyxel.text(controlSize, 32, str(scroll.page[0].x) + ":" + str(player.x), 0)
         self.BlockHEAD(player, scroll.page[pageNum])
 
     def BlockHEAD(self, player, page):
@@ -134,6 +134,7 @@ class App:
             self.isFall = False
             self.isStun = False
             self.canMove = [True, True]
+
 
         def move(self):
             global playerSpeed, scrollSpeed
