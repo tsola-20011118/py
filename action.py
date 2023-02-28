@@ -9,12 +9,14 @@ scrollSpeed = 2
 # Loves jinyang♡
 # Loves rkurimot♡
 # Loves igagurimot♡
+# Loves roostar and Bython
+# Loves flower ghost
 
 
 class App:
     def __init__(self):
         pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
-        # pyxel.load("action.pyxres")
+        pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
         # 今何ステージ目か
@@ -69,7 +71,8 @@ class App:
         pyxel.text(48, 0, str(self.player.isFall), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
-        self.Bump(self.player, self.scroll[self.currentStage])
+
+        # self.Bump(self.player, self.scroll[self.currentStage])
 
     def Bump(self, player, scroll):
         pageNum = None
@@ -138,6 +141,7 @@ class App:
 
         def move(self):
             global playerSpeed, scrollSpeed
+            self.x -= scrollSpeed
             if self.isStun == False:
                 if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize and self.canMove[1] == True:
                     self.image = 2
@@ -190,7 +194,6 @@ class App:
                 self.isFall = False
 
         def update(self):
-            # 変更しました（draw->updateへの移行）
             self.move()
             self.jump()
 
@@ -416,12 +419,12 @@ class App:
 
         class Boss:
             def __init__(self):
-                # self.image = 0
-                # self.imageX = 0
-                # self.imageY = 0
+                self.image = 0
+                self.imageX = 32
+                self.imageY = 48
                 self.imageWidth = 32
                 self.imageHeight = 32
-                # self.imageColor = 6
+                self.imageColor = 6
                 self.groundY = windowSizeY - 16 - self.imageHeight
                 self.x = controlSize + (windowSizeX - self.imageHeight) / 2
                 self.y = self.groundY
@@ -447,6 +450,7 @@ class App:
                 self.beamSpeed = 0
                 self.beamTime = 0
                 self.beamVanishtime = 0
+                self.damage = 3
 
             def update(self, player):
                 if self.time % 90 == 0 and self.action == False:
@@ -466,6 +470,7 @@ class App:
                         else:
                             self.beamDirection = 0
                 self.stun(player)
+                # self.be_stamp(player)
                 self.jump()
                 self.fire()
                 self.beam()
@@ -551,6 +556,12 @@ class App:
                         self.action = False
                     self.beamTime += 1
 
+            def be_stamp(self, player):
+                if self.x - 10 < player.x < self.x + 10 and self.y - 10 < player.y < self.y + 6:
+                    player.canJump[0] = True
+                    self.damage -= 1
+                    if self.damage == 0:
+                        self.isDead = True
 
 
             def moveRL(self):
@@ -577,11 +588,11 @@ class App:
                     pyxel.rect(self.x, self.y + 4, self.beamSize, self.imageHeight - 8, 8)
                 elif self.beamDirection == 1:
                     pyxel.rect(self.x - self.beamSize, self.y + 4, self.beamSize, self.imageHeight - 8, 8)
-                pyxel.rect(self.x, self.y, self.imageWidth, self.imageHeight, 8)
-                # pyxel.text(controlSize, 0, str(self.action), 0)
-                # # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
-                # # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
-                # # pyxel.text(controlSize, 48, str(self.beamSpeed), 0)
+                pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
+                pyxel.text(controlSize, 0, str(self.action), 0)
+                # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
+                # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
+                # pyxel.text(controlSize, 48, str(self.beamSpeed), 0)
                 # pyxel.rect(self.x + self.imageWidth / 2 , self.y + self.imageHeight / 2, 10, 10, 0)
                 
                 # pyxel.circ(0, 0, 100, 0)
