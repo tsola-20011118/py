@@ -22,8 +22,8 @@ class App:
         # 今何ステージ目か
         self.currentStage = 0
         # ステージ内のバトルフェーズか（False=scroll, True=battle）
-        # self.battlePhase = True
-        self.battlePhase = False
+        self.battlePhase = True
+        # self.battlePhase = False
         # ステージ
         self.scroll = []
         # scrolllインスタンス化
@@ -138,7 +138,7 @@ class App:
             self.y_prev = self.y
             self.scrollspeed = scrollSpeed
             self.isFall = False
-            self.isStun = True
+            self.isStun = False
             self.canMove = [True, True]
             self.life = 100
 
@@ -574,14 +574,19 @@ class App:
             def be_damege(self, player):
                 if self.action == True:
                     if self.lifeReduce == False:
-                        
                         if self.jumpFlag == True:
-                            pass
+                            if self.y - player.imageHeight / 2 < player.y < self.y + self.imageHeight - player.imageHeight / 2 and self.x - player.imageWidth < player.x < self.x + self.imageWidth:
+                                player.life -= 10
+                                self.lifeReduce = True
+                                player.isStun = True
                         elif self.stunFlag == True:
                             pass
                             # stun内に記述
                         elif self.fireFlag == True:
-                            pass
+                            if (self.y - player.y) * (self.y - player.y) + (self.x - player.x) * (self.x - player.x) <= self.fireSize[0] * self.fireSize[0]:
+                                player.life -= 10
+                                self.lifeReduce = True
+                                player.isStun = True
                         elif self.beamFlag == True:
                             if self.groundY + self.imageHeight - player.imageHeight - 16 <= player.y <= self.groundY + self.imageHeight - player.imageHeight:
                                 if self.beamDirection == 0 and self.x < player.x < self.x + self.beamSize - 10:
