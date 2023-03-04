@@ -6,11 +6,11 @@ windowSizeY = 16 * 12
 playerSpeed = 4  # 2のn乗でないとバグる
 scrollSpeed = 2
 
-# Loves jinyang♡
+# A little bit hate jinyang💔
 # Loves rkurimot♡
 # Loves igagurimot♡
-# Loves roostar and Bython
-# Loves flower ghost
+# Loves roostar♡ and Bython♡
+# Loves flower ghost♡
 
 
 class App:
@@ -22,7 +22,8 @@ class App:
         # 今何ステージ目か
         self.currentStage = 0
         # ステージ内のバトルフェーズか（False=scroll, True=battle）
-        self.battlePhase = True
+        # self.battlePhase = True
+        self.battlePhase = False
         # ステージ
         self.scroll = []
         # scrolllインスタンス化
@@ -72,7 +73,7 @@ class App:
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
         self.player.draw()
 
-        # self.Bump(self.player, self.scroll[self.currentStage])
+        self.Bump(self.player, self.scroll[self.currentStage])
 
     def Bump(self, player, scroll):
         pageNum = None
@@ -113,7 +114,9 @@ class App:
                     flag = False
         if flag:
             player.isFall = True
-
+        
+    def BlockASS(self, player, page):
+        pass
 
     class Player:
         # 変数名の変更したらcommitmessageに必ず書いてくれ
@@ -135,7 +138,7 @@ class App:
             self.y_prev = self.y
             self.scrollspeed = scrollSpeed
             self.isFall = False
-            self.isStun = False
+            self.isStun = True
             self.canMove = [True, True]
             self.life = 100
 
@@ -160,6 +163,9 @@ class App:
                 # TODO いる？
                 # if pyxel.btn(pyxel.KEY_RIGHT) == False:
                 #     scrollSpeed = self.scrollspeed
+            else:
+                self.image = 1
+                self.imageX = 16
 
         def jump(self):
             if self.isStun == False:
@@ -391,7 +397,7 @@ class App:
 
         def update(self, player):
             if self.time == 0:
-                self.life = player.life
+                self.lifeMax = player.life
             self.playerMoveCheck(player)
             self.boss.update(player)
             self.time += 1
@@ -412,7 +418,7 @@ class App:
             # playerのlife管理
             pyxel.rect(controlSize + 40 + 60, windowSizeY - 5 - 10, windowSizeX - 100, 10, 0)
             pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, windowSizeX - 104, 6, 13)
-            pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, (windowSizeX - 104) / self.life * player.life, 6, 8)
+            pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, (windowSizeX - 104) / self.lifeMax * player.life, 6, 8)
         
         def playerMoveCheck(self, player):
             if player.x + player.speed + player.imageWidth > self.boss.x and player.x < self.boss.x and self.boss.y - player.imageHeight < player.y < self.boss.y + self.boss.imageHeight:
