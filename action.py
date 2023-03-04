@@ -200,7 +200,7 @@ class App:
 
         def draw(self):
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,self.imageWidth, self.imageHeight, self.imageColor)
-            pyxel.text(controlSize, 0, str(self.life), 0)
+            pyxel.text(controlSize, 0, str(self.isStun), 0)
 
     class Item:
         def __init__(self):
@@ -391,7 +391,7 @@ class App:
 
         def update(self, player):
             if self.time == 0:
-                self.life = player.life
+                self.lifeMax = player.life
             self.playerMoveCheck(player)
             self.boss.update(player)
             self.time += 1
@@ -412,7 +412,7 @@ class App:
             # playerのlife管理
             pyxel.rect(controlSize + 40 + 60, windowSizeY - 5 - 10, windowSizeX - 100, 10, 0)
             pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, windowSizeX - 104, 6, 13)
-            pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, (windowSizeX - 104) / self.life * player.life, 6, 8)
+            pyxel.rect(controlSize + 42 + 60, windowSizeY - 5 - 8, (windowSizeX - 104) / self.lifeMax * player.life, 6, 8)
         
         def playerMoveCheck(self, player):
             if player.x + player.speed + player.imageWidth > self.boss.x and player.x < self.boss.x and self.boss.y - player.imageHeight < player.y < self.boss.y + self.boss.imageHeight:
@@ -459,6 +459,9 @@ class App:
                 self.beamVanishtime = 0
                 self.damage = 3
                 self.isDead = False
+                self.temp = 0
+                self.lifeReduce = False
+
 
             def update(self, player):
                 if self.time % 90 == 0 and self.action == False:
@@ -471,9 +474,12 @@ class App:
                         self.stunFlag = True
                     elif bossAction < 8:
                         self.fireFlag = True
-                    elif bossAction < 10:
+                    elif bossAction <= 10:
                         self.beamFlag = True
-                        self.beamDirection = pyxel.rndi(0,1)
+                        if self.x > controlSize + windowSizeX / 2:
+                            self.beamDirection = 1
+                        else:
+                            self.beamDirection = 0
                 self.stun(player)
                 # self.be_stamp(player)
                 self.jump()
@@ -482,6 +488,7 @@ class App:
                 if self.beamFlag == False and self.fireFlag == False and self.stunTime == 0:
                     self.moveRL(player)
                 # self.be_stamp( player)
+                self.be_damege(player)
                 self.time += 1
 
             def jump(self):
@@ -512,11 +519,11 @@ class App:
                         if self.y >= self.groundY:
                             self.y = self.groundY
                             self.stunStayTime += 1
-                            if player.y == self.groundY:
+                            if player.y == self.groundY + self.imageHeight - player.imageHeight:
                                 player.isStun = True
                         if self.stunStayTime != 0 and self.stunStayTime < 20:
                             self.stunTime += 1
-                        if self.stunStayTime >= 20:
+                        if self.stunStayTime >= 40:
                             player.isStun = False
                             self.stunFlag = False
                             self.jumpUp = True
@@ -543,7 +550,7 @@ class App:
             def beam(self):
                 if self.beamFlag == True:
                     if self.beamTime > 10:
-                        self.beamSpeed = 8
+                        self.beamSpeed = 10
                     self.beamSize += self.beamSpeed
                     if self.beamVanishtime == 0 and ((self.beamDirection == 0 and self.beamSize + self.x > controlSize + windowSizeX) or (self.beamDirection == 1 and + self.x - self.beamSize < controlSize)):
                         self.beamVanishtime += 1
@@ -555,12 +562,33 @@ class App:
                         self.beamSpeed = 0
                         self.beamTime = 0
                         self.beamVanishtime = 0
-                        if self.x > controlSize + windowSizeX / 2:
-                            self.beamDirection = 1
-                        else:
-                            self.beamDirection = 0
                         self.action = False
                     self.beamTime += 1
+
+            def be_damege(self, player):
+                if self.action == True:
+                    if self.lifeReduce == False:
+                        
+                        if self.jumpFlag == True:
+                            pass
+                        elif self.stunFlag == True:
+                            pass
+                            # stun内に記述
+                        elif self.fireFlag == True:
+                            pass
+                        elif self.beamFlag == True:
+                            if self.groundY + self.imageHeight - player.imageHeight - 16 <= player.y <= self.groundY + self.imageHeight - player.imageHeight:
+                                if self.beamDirection == 0 and self.x < player.x < self.x + self.beamSize - 10:
+                                    player.life -= 10
+                                    self.lifeReduce = True
+                                    player.isStun = True
+                                elif self.beamDirection == 1 and self.x - self.beamSize + 10 < player.x < self.x:
+                                    player.life -= 10
+                                    self.lifeReduce = True
+                                    player.isStun = True
+                else:
+                    self.lifeReduce = False
+                    player.isStun = False
 
             def be_stamp(self, player):
                 if self.x - 10 < player.x < self.x + 10 and self.y - 10 < player.y < self.y + 6:
@@ -585,8 +613,6 @@ class App:
                         self.moveTemp = pyxel.rndi(0, controlSize * 2 + windowSizeX)
                     self.speedX = (self.moveTemp - self.x) / abs(self.moveTemp - self.x) * 2
 
-
-
             def draw(self):
                 for size in self.fireSize:
                     pyxel.circ(self.x + self.imageWidth / 2 , self.y + self.imageHeight / 2, size, 0)
@@ -599,10 +625,8 @@ class App:
                         pyxel.blt(self.x - i * 16, self.y + 12, self.image, 0, 16 * 7, 16, 16, self.imageColor)
                     pyxel.blt(self.x - self.beamSize + 16, self.y + 12, self.image, 0, 16 * 7, self.beamSize - int(self.beamSize / 16) * 16, 16, self.imageColor)
                 pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
-                # pyxel.text(controlSize, 16, str(self.beamFlag), 0)
-                # pyxel.text(controlSize, 32, str(self.beamDirection), 0)
-                pyxel.text(controlSize, 48, str(self.beamSize), 0)
-                # pyxel.circ(0, 0, 100, 0)
+                pyxel.text(controlSize, 16, str(self.action), 0)
+                pyxel.text(controlSize, 32, str(self.lifeReduce), 0)
 
 
 
