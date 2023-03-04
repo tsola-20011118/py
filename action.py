@@ -594,7 +594,6 @@ class App:
                     for i in range(int(self.beamSize / 16)):
                         pyxel.blt(self.x - 16  + self.imageWidth + i * 16, self.y + 12, self.image, 0, 16 * 7, 16, 16, self.imageColor)
                     pyxel.blt(self.x - 16 + self.imageWidth + int(self.beamSize / 16) * 16, self.y + 12, self.image, 0, 16 * 7, self.beamSize - int(self.beamSize / 16) * 16, 16, self.imageColor)
-
                 elif self.beamDirection == 1:
                     for i in range(int(self.beamSize / 16)):
                         pyxel.blt(self.x - i * 16, self.y + 12, self.image, 0, 16 * 7, 16, 16, self.imageColor)
