@@ -1,4 +1,5 @@
 import pyxel
+import math
 
 controlSize = 16 * 6
 windowSizeX = 16 * 16
@@ -466,35 +467,54 @@ class App:
                 self.damage = 3
                 self.isDead = False
                 self.temp = 0
-                self.lifeReduce = False
+                self.lifeReduce = 0
+                self.reduce = False
+                self.reduceTime = 0
 
 
             def update(self, player):
-                if self.time % 90 == 0 and self.action == False:
-                    self.action = True
-                    bossAction = pyxel.rndi(0,10)
-                    bossAction = 9
-                    if bossAction < 3:
-                        self.jumpFlag = True
-                    elif bossAction < 6:
-                        self.stunFlag = True
-                    elif bossAction < 8:
-                        self.fireFlag = True
-                    elif bossAction <= 10:
-                        self.beamFlag = True
-                        if self.x > controlSize + windowSizeX / 2:
-                            self.beamDirection = 1
-                        else:
-                            self.beamDirection = 0
-                self.stun(player)
-                # self.be_stamp(player)
-                self.jump()
-                self.fire()
-                self.beam()
-                if self.beamFlag == False and self.fireFlag == False and self.stunTime == 0:
-                    self.moveRL(player)
-                # self.be_stamp( player)
-                self.be_damege(player)
+                if self.reduce == False:
+                    if self.time % 120 == 0 and self.action == False:
+                        self.action = True
+                        bossAction = pyxel.rndi(0,10)
+                        bossAction = 5
+                        if bossAction < 3:
+                            self.jumpFlag = True
+                        elif bossAction < 6:
+                            self.stunFlag = True
+                        elif bossAction < 8:
+                            self.fireFlag = True
+                        elif bossAction <= 10:
+                            self.beamFlag = True
+                            if self.x > controlSize + windowSizeX / 2:
+                                self.beamDirection = 1
+                            else:
+                                self.beamDirection = 0
+                    self.stun(player)
+                    self.jump()
+                    self.fire()
+                    self.beam()
+                    if self.beamFlag == False and self.fireFlag == False and self.stunTime == 0:
+                        self.moveRL(player)
+                    self.be_stamp( player)
+                    self.be_damage(player)
+                else:
+                    self.stunTime += 1
+                    if self.reduceTime == 0:
+                        self.x -= 4
+                        self.y -= 1
+                    if self.x < controlSize + 8 or self.reduceTime != 0:
+                        self.reduceTime += 1
+                    if self.reduceTime >= 10 and self.y != self.groundY:
+                        self.y += 5
+                        if self.y >= self.groundY:
+                            self.y = self.groundY
+                            self.stunTime = 0
+                    if self.stunTime >= 10 and  self.y == self.groundY:
+                        self.reduce = False
+                        self.reduceTime = 0
+                        self.stunTime = 0
+
                 self.time += 1
 
             def jump(self):
@@ -571,43 +591,47 @@ class App:
                         self.action = False
                     self.beamTime += 1
 
-            def be_damege(self, player):
-                if self.action == True:
-                    if self.lifeReduce == False:
-                        if self.jumpFlag == True:
-                            if self.y - player.imageHeight / 2 < player.y < self.y + self.imageHeight - player.imageHeight / 2 and self.x - player.imageWidth < player.x < self.x + self.imageWidth:
+            def be_damage(self, player):
+                if self.lifeReduce == 0:
+                    if self.jumpFlag == True:
+                        pass
+                        # 通常時と同じ挙動
+                    elif self.stunFlag == True:
+                        pass
+                        # stun内に記述
+                    elif self.fireFlag == True:
+                        if (self.y - player.y) * (self.y - player.y) + (self.x - player.x) * (self.x - player.x) <= self.fireSize[0] * self.fireSize[0]:
+                            player.life -= 10
+                            self.lifeReduce = 1
+                            player.isStun = True
+                    elif self.beamFlag == True:
+                        if self.groundY + self.imageHeight - player.imageHeight - 16 <= player.y <= self.groundY + self.imageHeight - player.imageHeight:
+                            if self.beamDirection == 0 and self.x < player.x < self.x + self.beamSize - 10:
                                 player.life -= 10
-                                self.lifeReduce = True
+                                self.lifeReduce = 1
                                 player.isStun = True
-                        elif self.stunFlag == True:
-                            pass
-                            # stun内に記述
-                        elif self.fireFlag == True:
-                            if (self.y - player.y) * (self.y - player.y) + (self.x - player.x) * (self.x - player.x) <= self.fireSize[0] * self.fireSize[0]:
+                            elif self.beamDirection == 1 and self.x - self.beamSize + 10 < player.x < self.x:
                                 player.life -= 10
-                                self.lifeReduce = True
+                                self.lifeReduce = 1
                                 player.isStun = True
-                        elif self.beamFlag == True:
-                            if self.groundY + self.imageHeight - player.imageHeight - 16 <= player.y <= self.groundY + self.imageHeight - player.imageHeight:
-                                if self.beamDirection == 0 and self.x < player.x < self.x + self.beamSize - 10:
-                                    player.life -= 10
-                                    self.lifeReduce = True
-                                    player.isStun = True
-                                elif self.beamDirection == 1 and self.x - self.beamSize + 10 < player.x < self.x:
-                                    player.life -= 10
-                                    self.lifeReduce = True
-                                    player.isStun = True
-                else:
-                    self.lifeReduce = False
-                    player.isStun = False
+                    if self.y - player.imageHeight / 2 < player.y < self.y + self.imageHeight - player.imageHeight / 2 and self.x - player.imageWidth < player.x < self.x + self.imageWidth:
+                        player.life -= 10
+                        self.lifeReduce = 1
+                        player.isStun = True
+                if self.lifeReduce != 0:
+                    self.lifeReduce += 1
+                    if self.lifeReduce >= 30:
+                        self.lifeReduce = 0
+                        player.isStun = False
 
             def be_stamp(self, player):
-                if self.x - 10 < player.x < self.x + 10 and self.y - 10 < player.y < self.y + 6:
-                    player.canJump[0] = True
+                if self.lifeReduce == 0 and self.x - self.imageWidth / 3 < player.x and player.x + player.imageWidth < self.x + self.imageWidth / 3 * 4 and self.y - player.imageHeight * 2 < player.y < self.y:
                     self.damage -= 1
+                    self.lifeReduce = 1
+                    self.reduce = True
+                    self.temp = self.x
                     if self.damage == 0:
                         self.isDead = True
-
 
             def moveRL(self, player):
                 if (self.speedX < 0 and controlSize > self.x + self.speedX):
@@ -625,8 +649,11 @@ class App:
                     self.speedX = (self.moveTemp - self.x) / abs(self.moveTemp - self.x) * 2
 
             def draw(self):
-                for size in self.fireSize:
-                    pyxel.circ(self.x + self.imageWidth / 2 , self.y + self.imageHeight / 2, size, 0)
+                if self.fireFlag == True:
+                    for size in self.fireSize:
+                        for x in range(36):
+                            pyxel.blt(self.x + self.imageWidth / 2 + math.cos(x * 10) * size - 8 , self.y + self.imageHeight / 2 + math.sin(x * 10) * size - 8,self.image, 16, 16 * 7, 16, 16, self.imageColor)
+                        # pyxel.circ(self.x + self.imageWidth / 2 , self.y + self.imageHeight / 2, size, 0)
                 if self.beamDirection == 0:
                     for i in range(int(self.beamSize / 16)):
                         pyxel.blt(self.x - 16  + self.imageWidth + i * 16, self.y + 12, self.image, 0, 16 * 7, 16, 16, self.imageColor)
@@ -636,8 +663,8 @@ class App:
                         pyxel.blt(self.x - i * 16, self.y + 12, self.image, 0, 16 * 7, 16, 16, self.imageColor)
                     pyxel.blt(self.x - self.beamSize + 16, self.y + 12, self.image, 0, 16 * 7, self.beamSize - int(self.beamSize / 16) * 16, 16, self.imageColor)
                 pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
-                pyxel.text(controlSize, 16, str(self.action), 0)
-                pyxel.text(controlSize, 32, str(self.lifeReduce), 0)
+                pyxel.text(controlSize, 16, str(self.stunTime), 0)
+
 
 
 
