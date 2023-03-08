@@ -16,15 +16,15 @@ scrollSpeed = 2
 
 class App:
     def __init__(self):
-        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=30)
+        pyxel.init(windowSizeX + controlSize * 2, windowSizeY, fps=10)
         pyxel.load("action.pyxres")
         # 全部で何ステージあるか
         self.stageNum = 4
         # 今何ステージ目か
         self.currentStage = 0
         # ステージ内のバトルフェーズか（False=scroll, True=battle）
-        self.battlePhase = True
-        # self.battlePhase = False
+        # self.battlePhase = True
+        self.battlePhase = False
         # ステージ
         self.scroll = []
         # scrolllインスタンス化
@@ -72,6 +72,7 @@ class App:
         # pyxel.text(0, 0, str(self.scroll[0].page[0].block[0].x), 0)
         # pyxel.text(48, 0, str(self.player.isFall), 0)
         # pyxel.text(0, 16, str(self.scroll[0].page[0].block[1].blockXNum), 0)
+        pyxel.text(48, 0, str(self.player.isFall), 0)
         self.player.draw()
 
         self.Bump(self.player, self.scroll[self.currentStage])
@@ -85,13 +86,13 @@ class App:
                     pageNum = i
                     placeNum = j
                     break
-        listX = []
-        listY = []
-        for i in scroll.page[pageNum].block:
-            for j in range(i.amount):
-                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
-                    listX.append(i.blockX[j])
-                    listY.append(i.blockY)
+        # listX = []
+        # listY = []
+        # for i in scroll.page[pageNum].block:
+        #     for j in range(i.amount):
+        #         if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
+        #             listX.append(i.blockX[j])
+        #             listY.append(i.blockY)
         self.BlockHEAD(player, scroll.page[pageNum])
         self.BlockASS(player, scroll.page[pageNum])
         
@@ -106,24 +107,42 @@ class App:
         flag = True
         for i in page.block:
             for j in range(i.amount):
-                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force < i.blockY + 16 and player.y <= i.blockY:
+                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + 16 + player.force < i.blockY + 6 and player.y + 16 <= i.blockY:
                     player.canJump = 2
                     player.y = i.blockY - 16
                     player.grandY = i.blockY - 16
                     player.isFall = False
+                    player.force = 0
                     flag = False
                     break
         if flag:
             player.isFall = True
+            pyxel.text(128, 0, str(self.player.isFall), 0)
  
     def BlockASS(self, player, page):
-        if player.isFall == False:
-            for i in page.block:
-                for j in range(i.amount):
-                    if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY  < player.y + player.force < i.blockY + 22 and player.y >= i.blockY:
-                        player.force = 0.5
-                        player.isFall = True
-                        break
+        for i in page.block:
+            for j in range(i.amount):
+                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY + 10 < player.y + player.force < i.blockY + 16 and player.y >= i.blockY + 16:
+                    player.force = 0.5
+                    player.isFall = True
+                    break
+
+    def BlockSIDE(self, player, page):
+        for i in page.block:
+            for j in range(i.amount):
+                if i.blockX[j] < player.x + 16 and i.blockY < player.y + 16 < i.blockY + 16:
+                    player.x = i.blockX[j] - 16
+                    break
+                if i.blockX[j] > player.x + 16 + 16 and i.blockY < player.y + 16 < i.blockY + 16:
+                    player.x = i.blockX[j] + 16
+                    break
+                
+
+
+
+
+
+
 
     # def BlockHEAD(self, player, page):
     #     flag = True
@@ -138,7 +157,7 @@ class App:
     #             player.grandY = min(list) - 16
     #         else:
     #             player.grandY = windowSizeY - 16 - 16
-    #         player.Fall()
+    #         player.fall()
     #     for i in page.block:
     #         for j in range(i.amount):
     #             if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
@@ -232,7 +251,7 @@ class App:
                         self.canJump = 2
                         self.isFall = False
 
-        def Fall(self):
+        def fall(self):
             self.y += self.force
             self.force += 0.5
             if self.y >= self.groundY:
@@ -267,7 +286,7 @@ class App:
         #                 self.canJump = [True, True]
         #                 self.isFall = True
 
-        # def Fall(self):
+        # def fall(self):
         #     self.y += self.force
         #     self.force += 1
         #     if self.y + self.force >= self.grandY:
@@ -279,7 +298,7 @@ class App:
             self.move()
             self.jump()
             if self.isFall:
-                self.Fall()
+                self.fall()
 
         def draw(self):
             pyxel.blt(self.x, self.y, self.image, self.imageX, self.imageY,self.imageWidth, self.imageHeight, self.imageColor)
@@ -424,6 +443,7 @@ class App:
                         else:
                             self.blockItem.append(False)
                     self.blockY = pyxel.rndi(5, 9) * 16
+
 
                 def update(self, x):
                     self.x = x
