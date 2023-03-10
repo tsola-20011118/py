@@ -124,9 +124,11 @@ class App:
         #         if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
         #             listX.append(i.blockX[j])
         #             listY.append(i.blockY)
-        self.BlockHEAD(player, scroll.page[pageNum])
-        self.BlockASS(player, scroll.page[pageNum])
-        
+        if self.battlePhase == False:
+            self.BlockHEAD(player, scroll.page[pageNum])
+            self.BlockASS(player, scroll.page[pageNum])
+            self.BlockSIDE(player, scroll.page[pageNum])
+
 
         # if scroll.page[pageNum].block[0].blockY #player.yが０〜scroll.page[pageNum].block[0].blockY-16の時の終了判定
         # if windowSizeY - 16 #player.yがscroll.page[pageNum].block[0].blockY+ 16 〜の時の終了判定
@@ -135,7 +137,7 @@ class App:
         flag = True
         for i in page.block:
             for j in range(i.amount):
-                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + 16 + player.force < i.blockY + 6 and player.y + 16 <= i.blockY:
+                if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY - 6 < player.y + 16 + player.force < i.blockY + 6 and player.y + 16 <= i.blockY:
                     player.canJump = 2
                     player.y = i.blockY - 16
                     player.grandY = i.blockY - 16
@@ -145,7 +147,7 @@ class App:
                     break
         if flag:
             player.isFall = True
-            # pyxel.text(128, 0, str(self.player.isFall), 0)
+            # pyxel.text(0, 180, str(self.player.isFall), 0)
  
     def BlockASS(self, player, page):
         for i in page.block:
@@ -158,37 +160,16 @@ class App:
     def BlockSIDE(self, player, page):
         for i in page.block:
             for j in range(i.amount):
-                if i.blockX[j] < player.x + 16 and i.blockY < player.y + 16 < i.blockY + 16:
-                    player.x = i.blockX[j] - 16
+                if i.blockX[j] < player.x + 16  + playerSpeed < i.blockX[j] + 16 and i.blockY < player.y + 16 < i.blockY + 16:
+                    player.x = i.blockX[j] - 16 - scrollSpeed
+                    player.canMove[0] = False
                     break
-                if i.blockX[j] > player.x + 16 + 16 and i.blockY < player.y + 16 < i.blockY + 16:
-                    player.x = i.blockX[j] + 16
+                elif i.blockX[j] > player.x + 16 + playerSpeed > i.blockX[j] + 16 and i.blockY < player.y + 16 < i.blockY + 16:
+                    player.x = i.blockX[j] + 16 - scrollSpeed
+                    player.canMove[1] = False
                     break
-
-    # def BlockHEAD(self, player, page):
-    #     flag = True
-    #     if player.isFall == True:
-    #         list = []
-    #         for i in page.block:
-    #             for j in range(i.amount):
-    #                 if i.blockX[j] < player.x < i.blockX[j] + 16:
-    #                     if i.blockY > player.y:
-    #                         list.append(i.blockY)
-    #         if list != []:
-    #             player.grandY = min(list) - 16
-    #         else:
-    #             player.grandY = windowSizeY - 16 - 16
-    #         player.fall()
-    #     for i in page.block:
-    #         for j in range(i.amount):
-    #             if i.blockX[j] < player.x < i.blockX[j] + 16 and i.blockY < player.y + player.force + 16 < i.blockY + 16:
-    #                 player.canJump = 2
-    #                 player.y = i.blockY - 16
-    #                 player.grandY = i.blockY - 16
-    #                 player.isFall = False
-    #                 flag = False
-    #     if flag:
-    #         player.isFall = True
+                else:
+                    player.canMove = [True, True]
 
     def HoleDown(self, hole, player):
         if player.alive == True and player.y == windowSizeY - 32 and hole.holeX + 4 < player.x < hole.holeX + 16 - 4:
@@ -281,11 +262,7 @@ class App:
             self.alive = True
             self.lifeMax = 18
 
-
         def move(self):
-            global playerSpeed, scrollSpeed
-            # TODO いるの？？？
-            # self.x -= scrollSpeed
             if self.isStun == False:
                 self.imageX = 0
                 if pyxel.btn(pyxel.KEY_LEFT) and self.x > controlSize and self.canMove[1] == True:
@@ -295,14 +272,8 @@ class App:
                     self.image = 1
                     if self.x < controlSize + windowSizeX - self.imageWidth:
                         self.x += self.speed
-                    # TODO いる？
-                    # else:
-                    #     scrollSpeed = playerSpeed
                 if pyxel.btn(pyxel.KEY_LEFT) == False and pyxel.btn(pyxel.KEY_RIGHT) == False:
                     self.image = 0
-                # TODO いる？
-                # if pyxel.btn(pyxel.KEY_RIGHT) == False:
-                #     scrollSpeed = self.scrollspeed
             else:
                 self.image = 1
                 self.imageX = 16
@@ -738,8 +709,6 @@ class App:
                 elif stageNum == 2:
                     self.imageX = 0
                     self.imageY = 80
-                
-
 
             def update(self, player):
                 if self.reduce == False:
@@ -783,7 +752,6 @@ class App:
                         self.reduce = False
                         self.reduceTime = 0
                         self.stunTime = 0
-
                 self.time += 1
 
             def jump(self):
