@@ -23,6 +23,7 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        global scrollSpeed
         if self.gameMode == 0:
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT, 1, 1) and (controlSize <= pyxel.mouse_x <=  controlSize + windowSizeX):
                 self.gameMode = 1
@@ -40,6 +41,10 @@ class App:
                                 self.EnemyBump(self.scroll[self.currentStage].page[i].enemy[j], self.player)
                         for j in range(self.scroll[self.currentStage].page[i].blockNum):
                             self.BlockToItem(self.scroll[self.currentStage].page[i].block[j], self.player, self.scroll[self.currentStage].page[i])
+                        for j in range(self.scroll[self.currentStage].page[i].blockNum):
+                            self.BlockToItem(self.scroll[self.currentStage].page[i].block[j], self.player, self.scroll[self.currentStage].page[i])
+                        for j in range(self.scroll[self.currentStage].page[i].itemNum):
+                            self.ItemGet(self.player, self.scroll[self.currentStage].page[i].item[j])
                 for i in range(self.scroll[self.currentStage].pageNum):
                     self.HoleDown(self.scroll[self.currentStage].page[i].ground, self.player)
                 # if self.player.life < 0:
@@ -63,6 +68,7 @@ class App:
                     self.endroll = self.Endroll("Game Clear")
                 self.battlePhase = False
                 self.currentStage += 1
+                scrollSpeed = 2
             if self.life < 0:
                 self.gameMode = -100
                 self.endroll = self.Endroll("Game Over")
@@ -133,6 +139,20 @@ class App:
         pyxel.rect(controlSize + windowSizeX, 0,controlSize, windowSizeY / 4, 6)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4, controlSize, windowSizeY / 2, 1)
         pyxel.rect(controlSize + windowSizeX, windowSizeY / 4 * 3, controlSize, windowSizeY / 4, 6)
+        # if self.scroll[self.currentStage].page[0].item:
+        #     pyxel.text(0,0, str(self.scroll[self.currentStage].page[0].item[0].blockX), 0)
+        #     pyxel.text(0,32, str(self.scroll[self.currentStage].page[0].item[0].y), 0)
+        #     pyxel.text(0,48, str(self.scroll[self.currentStage].page[0].item[0].x + self.scroll[self.currentStage].page[0].item[0].blockX), 0)
+        #     pyxel.text(0,56, str(controlSize + self.scroll[self.currentStage].page[0].item[0].blockX), 0)
+        # pyxel.text(0,16, str( self.gameMode), 0)
+        if self.gameMode == 1:
+            pyxel.rect(0, 0, controlSize, 16 * 3, 0)
+            pyxel.blt(0, 0, 0, 0, 0, 16, 16, 0)
+            pyxel.text(18, 6, str(self.item[0]), 7)
+            pyxel.blt(16 * 2, 0, 0, 0, 0, 16, 16, 0)
+            pyxel.text(16 * 2 + 18, 6, str(self.item[1]), 7)
+            pyxel.blt(16 * 4, 0, 0, 0, 0, 16, 16, 0)
+            pyxel.text(16 * 4 + 18, 6, str(self.item[2]), 7)
 
     def Bump(self, player, scroll):
         pageNum = None
@@ -227,16 +247,21 @@ class App:
                 if block.blockItem[i] == True:
                     block.blockItem[i] = False
                     page.itemNum += 1
-                    page.item.append(page.Item(page.x,  block.blockY, block.blockX[i]))
+                    page.item.append(page.Item(page.x, block.blockY, block.blockX[i]))
                     block.imageX[i] = 16 * 3
                 # player.isFall = True
+
+    def ItemGet(self, player, item):
+        if item.itemGet == False and item.blockX - 16 < player.x < item.blockX + 16 and item.y - 16 < player.y < item.y + 16:
+            item.itemGet = True
+            self.item[self.currentStage] += 1
 
     def reset(self):
         self.stageNum = 3
         # 今何ステージ目か
-        self.currentStage = 0
+        # self.currentStage = 0
         # ステージ内のバトルフェーズか（False=scroll, True=battle）
-        self.battlePhase = True
+        # self.battlePhase = True
         self.battlePhase = False
         # scrolllインスタンス化
         for i in range(self.stageNum):
@@ -263,8 +288,8 @@ class App:
         # 今何ステージ目か
         self.currentStage = 0
         # ステージ内のバトルフェーズか（False=scroll, True=battle）
-        self.battlePhase = True
-        # self.battlePhase = False
+        # self.battlePhase = True
+        self.battlePhase = False
         # ステージ
         self.scroll = []
         # scrolllインスタンス化
@@ -288,6 +313,7 @@ class App:
         self.endroll = self.Endroll("Game Clear")
         self.time = 0
         self.temp = 0
+        self.item = [0, 0, 0]
 
     class Player:
         # 変数名の変更したらcommitmessageに必ず書いてくれ
@@ -406,6 +432,8 @@ class App:
         #         self.isFall = False
 
         def update(self):
+            if self.x - scrollSpeed > controlSize:
+                self.x -= scrollSpeed
             self.move()
             self.jump()
             if self.isFall:
@@ -472,8 +500,7 @@ class App:
                 self.staticCoin = []
                 self.coinNum = pyxel.rndi(2, 4)
                 for i in range(self.coinNum):
-                    self.staticCoin.append(
-                        self.StaticCoin(stageNum, self.x, self.same))
+                    self.staticCoin.append(self.StaticCoin(stageNum, self.x, self.same))
                     self.same.append(self.staticCoin[i].coin)
                 self.enemy = []
                 self.enemyNum = 2
@@ -507,6 +534,9 @@ class App:
                 # pageの切り替わりがわかるように
                 # pyxel.rect(self.x, 0, 8, windowSizeY, 0)
                 self.ground.draw()
+                if self.item:
+                    for i in range(self.itemNum):
+                        self.item[i].draw()
                 for i in range(self.blockNum):
                     self.block[i].draw()
                 for i in range(self.coinNum):
@@ -514,9 +544,6 @@ class App:
                 if self.enemy:
                     for i in range(self.enemyNum):
                         self.enemy[i].draw()
-                if self.enemy:
-                    for i in range(self.itemNum):
-                        self.item[i].draw()
                 if pageNum == 5:
                     pyxel.blt(self.x + 16 * 15, 16, 0, 16 * 4, 0, 16, 16, 6);
                     for i in range(8):
@@ -650,7 +677,7 @@ class App:
                         pyxel.blt(self.enemyX, self.enemyY, 0, 16 * 2, 16 * 5, 16, 16, 6)
 
             class Item:
-                def __init__(self, x, y, X):
+                def __init__(self, x, y, blockX):
                     self.image = 0
                     self.imageX = 0
                     self.imageY = 0
@@ -659,18 +686,18 @@ class App:
                     self.imageColor = 6
                     self.x = x
                     self.y = y
-                    self.blockX = X
+                    self.blockX = blockX
                     self.temp = y - 16
+                    self.itemGet = False
 
                 def update(self, x):
-                    self.x = x
+                    self.blockX -= scrollSpeed
                     if self.temp != self.y:
                         self.y -= 0.5
 
                 def draw(self):
-                    pyxel.blt(self.x + self.blockX, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
-                    pyxel.text(controlSize, 0, str(self.x),0)
-                    pyxel.text(controlSize, 16, str(self.blockX),0)
+                    if self.itemGet == False:
+                        pyxel.blt(self.blockX, self.y, self.image, self.imageX, self.imageY, self.imageWidth, self.imageHeight, self.imageColor)
 
     class Battle:
         def __init__(self, stageNum):
